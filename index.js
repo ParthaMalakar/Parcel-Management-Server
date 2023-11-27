@@ -27,16 +27,31 @@ async function run() {
 
 
     const userCollection = client.db("ParcelDB").collection("users");
+    const parcelCollection = client.db("ParcelDB").collection("parcels");
+
+    app.post('/parcel', async (req, res) => {
+      const item = req.body;
+      const result = await parcelCollection.insertOne(item);
+      res.send(result);
+    });
+    app.get('/parcel/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const parcel = await parcelCollection.find(query).toArray();;
+      res.send(parcel);
+    });
     app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
 
       
       const query = { email: email };
       const user = await userCollection.findOne(query);
+      console.log(user)
       let admin = false;
       if (user) {
-        admin = user?.role === 'admin';
+        admin = user?.Role === 'admin';
       }
+      console.log(admin)
       res.send({ admin });
     })
     app.get('/users/user/:email', async (req, res) => {
@@ -54,7 +69,7 @@ async function run() {
     app.get('/users/delivary/:email', async (req, res) => {
       const email = req.params.email;
 
-      console.log(email)
+     
       const query = { email: email };
       const user = await userCollection.findOne(query);
       let delivary = false;
@@ -62,7 +77,7 @@ async function run() {
       if (user) {
         delivary = user?.Role === 'DeliveryMen';
       }
-      console.log(delivary)
+      
       res.send({ delivary });
     })
     app.post('/users', async (req, res) => {
