@@ -56,6 +56,21 @@ async function run() {
       const result = await parcelCollection.updateOne(filter, updatedDoc)
       res.send(result);
     });
+    app.patch('/parcel/cancel/:id', async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          status:item.status
+        }
+      }
+
+      const result = await parcelCollection.updateOne(filter, updatedDoc)
+      res.send(result);
+    });
+
+
     app.get('/parcel/:email', async (req, res) => {
       const email = req.params.email;
       const query = { Email: email };
