@@ -34,6 +34,28 @@ async function run() {
       const result = await parcelCollection.insertOne(item);
       res.send(result);
     });
+    app.patch('/parcel/:id', async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          phone:item.phone,
+          type:item.type,
+          weight:item.weight,
+          ReceiverName:item.ReceiverName,
+          ReceiverPhone: item.ReceiverPhone,
+          parcelAddress:item.parcelAddress,
+          parcelDate:item.parcelDate,
+          Latitude:item.Latitude,
+          longitude:item.longitude,
+          price: item.price
+        }
+      }
+
+      const result = await parcelCollection.updateOne(filter, updatedDoc)
+      res.send(result);
+    });
     app.get('/parcel/:email', async (req, res) => {
       const email = req.params.email;
       const query = { Email: email };
