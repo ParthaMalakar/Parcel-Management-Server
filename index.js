@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const port = process.env.PORT ||5000;
+const port = process.env.PORT || 5000;
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -22,12 +22,49 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    
+
 
 
 
     const userCollection = client.db("ParcelDB").collection("users");
+    app.get('/users/admin/:email', async (req, res) => {
+      const email = req.params.email;
 
+      
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role === 'admin';
+      }
+      res.send({ admin });
+    })
+    app.get('/users/user/:email', async (req, res) => {
+      const email = req.params.email;
+
+      
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let usera = false;
+      if (user) {
+        usera = user?.Role === 'User';
+      }
+      res.send({ usera });
+    })
+    app.get('/users/delivary/:email', async (req, res) => {
+      const email = req.params.email;
+
+      console.log(email)
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let delivary = false;
+      console.log(user)
+      if (user) {
+        delivary = user?.Role === 'DeliveryMen';
+      }
+      console.log(delivary)
+      res.send({ delivary });
+    })
     app.post('/users', async (req, res) => {
       const user = req.body;
       const query = { email: user.email }
@@ -52,9 +89,9 @@ run().catch(console.dir);
 
 
 
-app.get('/',(req,res)=>{
-    res.send('server is running');
+app.get('/', (req, res) => {
+  res.send('server is running');
 })
 app.listen(port, () => {
-    console.log(`Parcel web server is running port${port}`)
-  })
+  console.log(`Parcel web server is running port${port}`)
+})
