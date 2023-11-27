@@ -36,8 +36,14 @@ async function run() {
     });
     app.get('/parcel/:email', async (req, res) => {
       const email = req.params.email;
-      const query = { email: email };
-      const parcel = await parcelCollection.find(query).toArray();;
+      const query = { Email: email };
+      const parcel = await parcelCollection.find(query).toArray();
+      res.send(parcel);
+    });
+    app.get('/parceldetail/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const parcel = await parcelCollection.findOne(query);
       res.send(parcel);
     });
     app.get('/users/admin/:email', async (req, res) => {
