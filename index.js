@@ -28,7 +28,12 @@ async function run() {
 
     const userCollection = client.db("ParcelDB").collection("users");
     const parcelCollection = client.db("ParcelDB").collection("parcels");
-
+    const reviewCollection = client.db("ParcelDB").collection("reviews");
+    app.post('/review', async (req, res) => {
+      const item = req.body;
+      const result = await reviewCollection.insertOne(item);
+      res.send(result);
+    });
     app.post('/parcel', async (req, res) => {
       const item = req.body;
       const result = await parcelCollection.insertOne(item);
