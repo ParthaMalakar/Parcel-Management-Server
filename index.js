@@ -185,6 +185,14 @@ console.log(updated,id)
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
+    app.get('/count/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { delaverMenId: email };
+      const parcel = await parcelCollection.find(query).toArray();
+      const count = parcel.length;
+      res.send(count);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
