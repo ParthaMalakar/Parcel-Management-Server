@@ -75,7 +75,31 @@ async function run() {
       res.send(result);
     });
 
-
+    app.get('/parcel', async (req, res) => {
+      const { startDate, endDate } = req.query;
+    
+      const dateFilter = {};
+  
+      if (startDate && endDate) {
+          dateFilter.parcelDate = {
+              $gte: new Date(startDate).toISOString(),
+              $lte: new Date(endDate).toISOString()
+          };
+      } else if (startDate) {
+          dateFilter.parcelDate = { $gte: new Date(startDate).toISOString() };
+      } else if (endDate) {
+          dateFilter.parcelDate = { $lte: new Date(endDate).toISOString() };
+      }
+  
+      try {
+          // Find parcels matching the date range
+          const parcels = await parcelCollection.find(dateFilter).toArray();
+          res.json(parcels);
+      } catch (error) {
+          console.error(error);
+          res.status(500).send('Internal Server Error');
+      }
+    });
     app.get('/parcel/:email', async (req, res) => {
       const email = req.params.email;
       const query = { Email: email };
@@ -127,6 +151,29 @@ async function run() {
       }
       
       res.send({ delivary });
+    })
+    app.get('/users/delivary', async (req, res) => {
+      const query = { Role: 'DeliveryMen' };
+      const user = await userCollection.find(query).toArray();
+      console.log(user)
+      res.send(user);
+    })
+    app.put('/parcel/one/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true };
+      const updated = req.body;
+console.log(updated,id)
+      const updateditem = {
+        $set: {
+          status: updated.status,
+          delaverMenId:updated.delaverMenId,
+          delaveryDate:updated.delaveryDate
+        }
+      }
+
+      const result = await parcelCollection.updateOne(filter, updateditem, options);
+      res.send(result);
     })
     app.post('/users', async (req, res) => {
       const user = req.body;
