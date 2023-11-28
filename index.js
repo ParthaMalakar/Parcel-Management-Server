@@ -190,9 +190,46 @@ console.log(updated,id)
       const query = { delaverMenId: email };
       const parcel = await parcelCollection.find(query).toArray();
       const count = parcel.length;
-      res.send(count);
+      console.log(count)
+      res.send({ count });
     });
 
+    app.put('/user/update/:id', async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { email : id }
+      const existingUser = await userCollection.findOne(filter);
+      const updatedDoc = {
+        $set: {
+          averageReview:(parseFloat(item.averageReview) + parseFloat(existingUser?.averageReview))/2
+
+        }
+      }
+
+      const result = await userCollection.updateOne(filter, updatedDoc)
+      res.send(result);
+    });
+    app.put('/user/parcel/:id', async (req, res) => {
+      
+      const id = req.params.id;
+      const filter = { email : id }
+      const existingUser = await userCollection.findOne(filter);
+      const updatedDoc = {
+        $set: {
+          parcelbook: 1 + parseFloat(existingUser?.parcelbook)
+
+        }
+      }
+
+      const result = await userCollection.updateOne(filter, updatedDoc)
+      res.send(result);
+    });
+    app.get('/users', async (req, res) => {
+      
+      const user = await userCollection.find().toArray();
+      console.log(user)
+      res.send(user);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
