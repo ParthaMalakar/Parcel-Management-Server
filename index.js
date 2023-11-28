@@ -189,9 +189,8 @@ console.log(updated,id)
       const email = req.params.email;
       const query = { delaverMenId: email };
       const parcel = await parcelCollection.find(query).toArray();
-      const count = parcel.length;
-      console.log(count)
-      res.send({ count });
+      
+      res.send(parcel);
     });
 
     app.put('/user/update/:id', async (req, res) => {
@@ -250,6 +249,14 @@ console.log(updated,id)
       const count = await userCollection.estimatedDocumentCount();
       res.send({ count });
     })
+    app.get('/review/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { delaverMenId: email };
+      const parcel = await reviewCollection.find(query).toArray();
+      
+      res.send(parcel);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
