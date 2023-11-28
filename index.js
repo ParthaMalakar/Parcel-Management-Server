@@ -225,10 +225,13 @@ console.log(updated,id)
       res.send(result);
     });
     app.get('/users', async (req, res) => {
-      
-      const user = await userCollection.find().toArray();
-      console.log(user)
-      res.send(user);
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      const result = await userCollection.find()
+        .skip(page * size)
+        .limit(size)
+        .toArray();
+      res.send(result);
     })
     app.patch('/user/admin/:id', async (req, res) => {
       const item = req.body;
@@ -243,7 +246,10 @@ console.log(updated,id)
       const result = await userCollection.updateOne(filter, updatedDoc)
       res.send(result);
     });
-
+    app.get('/userCount', async (req, res) => {
+      const count = await userCollection.estimatedDocumentCount();
+      res.send({ count });
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
