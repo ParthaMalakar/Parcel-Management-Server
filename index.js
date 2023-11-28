@@ -230,6 +230,20 @@ console.log(updated,id)
       console.log(user)
       res.send(user);
     })
+    app.patch('/user/admin/:id', async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          Role:item.Role
+        }
+      }
+
+      const result = await userCollection.updateOne(filter, updatedDoc)
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
