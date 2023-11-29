@@ -54,14 +54,23 @@ async function run() {
       const email = req.decoded.email;
       const query = { email: email };
       const user = await userCollection.findOne(query);
-      const isAdmin = user?.role === 'admin';
+      const isAdmin = user?.Role === 'admin';
       if (!isAdmin) {
         return res.status(403).send({ message: 'forbidden access' });
       }
       next();
     }
-
-
+// use verify User after verifyToken
+const verifyUser = async (req, res, next) => {
+  const email = req.decoded.email;
+  const query = { email: email };
+  const user = await userCollection.findOne(query);
+  const isUser = user?.Role === 'User';
+  if (!isUser) {
+    return res.status(403).send({ message: 'forbidden access' });
+  }
+  next();
+}
 
     app.post('/review', async (req, res) => {
       const item = req.body;
@@ -332,7 +341,7 @@ console.log(updated,id)
     })
 
     //Payment
-    app.post('/create-payment-intent',verifyToken, async (req, res) => {
+    app.post('/create-payment-intent', async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
       console.log(amount, 'amount inside the intent')
@@ -348,7 +357,7 @@ console.log(updated,id)
       })
     })
     
-    app.post('/payments',verifyToken, async (req, res) => {
+    app.post('/payments',verifyToken,verifyUser, async (req, res) => {
       const payment = req.body;
       const paymentResult = await paymentCollection.insertOne(payment);
 
@@ -372,7 +381,7 @@ console.log(updated,id)
 
       res.send({ paymentResult, result });
     })
-    app.get('/payments/:email',verifyToken, async (req, res) => {
+    app.get('/payments/:email',verifyToken,verifyUser, async (req, res) => {
       const query = { email: req.params.email }
       if (req.params.email !== req.decoded.email) {
         return res.status(403).send({ message: 'forbidden access' });
