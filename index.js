@@ -33,7 +33,34 @@ async function run() {
       res.send({ token });
     })
 
-    
+    // middlewares 
+    const verifyToken = (req, res, next) => {
+      // console.log('inside verify token', req.headers.authorization);
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'unauthorized access' });
+      }
+      const token = req.headers.authorization.split(' ')[1];
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: 'unauthorized access' })
+        }
+        req.decoded = decoded;
+        next();
+      })
+    }
+
+    // use verify admin after verifyToken
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === 'admin';
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
+
 
 
     app.post('/review', async (req, res) => {
@@ -68,7 +95,7 @@ async function run() {
       const result = await parcelCollection.updateOne(filter, updatedDoc)
       res.send(result);
     });
-    app.patch('/parcel/cancel/:id', async (req, res) => {
+    app.patch('/parcel/cancel/:id',verifyToken, async (req, res) => {
       const item = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -107,7 +134,7 @@ async function run() {
           res.status(500).send('Internal Server Error');
       }
     });
-    app.get('/parcel/:email', async (req, res) => {
+    app.get('/parcel/:email',verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { Email: email };
       const parcel = await parcelCollection.find(query).toArray();
@@ -119,7 +146,7 @@ async function run() {
       const parcel = await parcelCollection.findOne(query);
       res.send(parcel);
     });
-    app.get('/users/admin/:email', async (req, res) => {
+    app.get('/users/admin/:email',verifyToken, async (req, res) => {
       const email = req.params.email;
 
       
@@ -265,7 +292,7 @@ console.log(updated,id)
       res.send(result);
     });
 
-    app.get('/users', async (req, res) => {
+    app.get('/users',verifyToken,verifyAdmin, async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
       const result = await userCollection.find()
@@ -305,7 +332,7 @@ console.log(updated,id)
     })
 
     //Payment
-    app.post('/create-payment-intent', async (req, res) => {
+    app.post('/create-payment-intent',verifyToken, async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
       console.log(amount, 'amount inside the intent')
@@ -321,7 +348,7 @@ console.log(updated,id)
       })
     })
     
-    app.post('/payments', async (req, res) => {
+    app.post('/payments',verifyToken, async (req, res) => {
       const payment = req.body;
       const paymentResult = await paymentCollection.insertOne(payment);
 
@@ -345,11 +372,11 @@ console.log(updated,id)
 
       res.send({ paymentResult, result });
     })
-    app.get('/payments/:email', async (req, res) => {
+    app.get('/payments/:email',verifyToken, async (req, res) => {
       const query = { email: req.params.email }
-      // if (req.params.email !== req.decoded.email) {
-      //   return res.status(403).send({ message: 'forbidden access' });
-      // }
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
       const result = await paymentCollection.find(query).toArray();
       res.send(result);
     })
