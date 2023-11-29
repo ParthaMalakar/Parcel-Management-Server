@@ -25,7 +25,7 @@ async function run() {
 
 
 
-
+    const paymentCollection = client.db("ParcelDB").collection("payments");
     const userCollection = client.db("ParcelDB").collection("users");
     const parcelCollection = client.db("ParcelDB").collection("parcels");
     const reviewCollection = client.db("ParcelDB").collection("reviews");
@@ -311,7 +311,30 @@ console.log(updated,id)
       })
     })
     
+    app.post('/payments', async (req, res) => {
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment);
 
+      //  carefully delete each item from the cart
+      console.log('payment info', payment);
+      const query = {
+        _id: {
+          $in: payment.ParcelIds?.map(id => new ObjectId(id))
+        }
+      };
+
+      const updatedDoc = {
+        $set: {
+          price:'0'
+        }
+      }
+
+      const result = await parcelCollection.updateMany(query, updatedDoc)
+
+      
+
+      res.send({ paymentResult, result });
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
