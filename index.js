@@ -158,6 +158,15 @@ async function run() {
       console.log(user)
       res.send(user);
     })
+    app.get('/topdelavery', async (req, res) => {
+      const query = { Role: 'DeliveryMen' };
+      const topdelavery = await userCollection
+        .find(query)
+        .sort({ delaveryCount: -1 })
+        .limit(5)
+        .toArray();
+      res.send(topdelavery);
+    })
     app.get('/all/men', async (req, res) => {
       const query = { status: 'delivered' };
       const user = await parcelCollection.find(query).toArray();
