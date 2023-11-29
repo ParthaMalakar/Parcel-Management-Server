@@ -335,6 +335,15 @@ console.log(updated,id)
 
       res.send({ paymentResult, result });
     })
+    app.get('/payments/:email', async (req, res) => {
+      const query = { email: req.params.email }
+      // if (req.params.email !== req.decoded.email) {
+      //   return res.status(403).send({ message: 'forbidden access' });
+      // }
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
