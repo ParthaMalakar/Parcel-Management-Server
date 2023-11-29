@@ -158,6 +158,13 @@ async function run() {
       console.log(user)
       res.send(user);
     })
+    app.get('/all/men', async (req, res) => {
+      const query = { status: 'delivered' };
+      const user = await parcelCollection.find(query).toArray();
+      const man = user.length
+      res.send({ man });
+    })
+
     app.put('/parcel/one/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -256,6 +263,13 @@ console.log(updated,id)
       
       res.send(parcel);
     });
+   
+    app.get('/parcelCount', async (req, res) => {
+      const count = await parcelCollection.estimatedDocumentCount();
+      res.send({ count });
+    })
+
+    
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
