@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -22,13 +23,19 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-
-
-
     const paymentCollection = client.db("ParcelDB").collection("payments");
     const userCollection = client.db("ParcelDB").collection("users");
     const parcelCollection = client.db("ParcelDB").collection("parcels");
     const reviewCollection = client.db("ParcelDB").collection("reviews");
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.send({ token });
+    })
+
+    
+
+
     app.post('/review', async (req, res) => {
       const item = req.body;
       const result = await reviewCollection.insertOne(item);
@@ -162,7 +169,10 @@ async function run() {
       const query = { Role: 'DeliveryMen' };
       const topdelavery = await userCollection
         .find(query)
-        .sort({ delaveryCount: -1 })
+        .sort([
+          ['delaveryCount', -1],  
+          ['averageReview', -1]   
+        ])
         .limit(5)
         .toArray();
       res.send(topdelavery);
